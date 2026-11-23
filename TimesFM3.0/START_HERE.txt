@@ -1,0 +1,7 @@
+1) Start the FastAPI backend: see README.md
+2) Open frontend/index.html (or serve frontend on port 5500)
+3) Upload sample_data/sample_daily_demand.csv
+4) Inspect Dataset, choose date + sales, then Run Forecast
+
+Demo mode is the default. Configure the TimesFM adapter and set TIMESFM_ENABLED=1
+after installing the current official TimesFM 3.0 package/checkpoint.

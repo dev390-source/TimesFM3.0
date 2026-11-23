@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XAUUSD Forecast Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">Au</div>
+      <div><div class="brand-name">XAUUSD <i>Forecast Lab</i></div><div class="brand-sub">Gold Market Forecasting · Upload, inspect, predict</div></div>
+    </div>
+    <div class="model-pill"><span class="pulse"></span><span id="modelName">TimesFM 3.0</span><small id="modelStatus">API checking…</small></div>
+  </header>
+
+  <main class="shell">
+    <section class="control-panel panel">
+      <div class="control-row">
+        <div class="actions"><button class="btn btn-light" id="inspectBtn">▤ &nbsp;Inspect Dataset</button><button class="btn btn-primary" id="runBtn">ϟ &nbsp;Run Forecast <span>↻</span></button></div>
+      </div>
+    </section>
+
+
+    <section class="kpi-grid" aria-label="Forecast evaluation and configuration metrics">
+      <article class="kpi-card kpi-wape">
+        <div class="kpi-top"><span>WAPE <span class="info-mark" title="Weighted Absolute Percentage Error. Lower is better.">?</span></span><span class="kpi-icon">◎</span></div>
+        <div class="kpi-value" id="wapeValue">--<small>%</small></div>
+        <div class="kpi-foot"><span id="wapeNote">Awaiting backtest evaluation</span></div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-top"><span>MAE <span class="info-mark" title="Mean Absolute Error in the target metric's units. Lower is better.">?</span></span><span class="kpi-icon">▥</span></div>
+        <div class="kpi-value" id="maeValue">--<small id="maeUnit">units</small></div>
+        <div class="kpi-foot"><span id="maeNote">Awaiting backtest evaluation</span></div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-top"><span>MAPE <span class="info-mark" title="Mean Absolute Percentage Error. Lower is better.">?</span></span><span class="kpi-icon">％</span></div>
+        <div class="kpi-value" id="mapeValue">--<small>%</small></div>
+        <div class="kpi-foot"><span id="mapeNote">Awaiting backtest evaluation</span></div>
+      </article>
+      <article class="kpi-card kpi-config">
+        <div class="kpi-top"><span>FORECAST HORIZON</span><span class="kpi-icon">◷</span></div>
+        <div class="kpi-value" id="topHorizonValue">96<small>periods</small></div>
+        <div class="kpi-foot"><span id="topHorizonNote">5-minute intervals</span></div>
+      </article>
+      <article class="kpi-card kpi-config">
+        <div class="kpi-top"><span>TARGET COLUMN</span><span class="kpi-icon">⌁</span></div>
+        <div class="kpi-value target-kpi-value" id="topTargetValue">Not selected</div>
+        <div class="kpi-foot"><span id="topTargetNote">Choose a metric to forecast</span></div>
+      </article>
+    </section>
+
+    <section class="workspace-grid">
+      <section class="panel chart-panel" id="results">
+        <div class="chart-head">
+          <div class="legend"><span><i class="legend-dot actual"></i> Past Data (Actuals)</span><span><i class="legend-dot forecast"></i> TimesFM 3.0 Forecast</span><span><i class="legend-line"></i> Forecast Range</span></div>
+          <div class="chart-tools"><button class="chip" id="fitBtn">↗ &nbsp;Full View</button><button class="chip" id="zoomBtn">⌕ &nbsp;Zoom Horizon</button></div>
+        </div>
+        <div class="chart-wrap"><div class="chart-scroll" id="chartScroll"><div class="chart-inner" id="chartInner"><canvas id="forecastChart"></canvas></div></div><div class="empty-state" id="emptyState"><div class="empty-icon">⌁</div><h3>Your forecast canvas is ready</h3><p>Upload your XAUUSD OHLC time series, inspect the columns, then run TimesFM 3.0.</p><button class="btn btn-primary" id="emptyUploadBtn">Upload dataset</button></div></div>
+        <div class="timeline">
+          <div class="timeline-labels"><span>HISTORY</span><span id="forecastSpan">FORECAST HORIZON</span></div>
+          <div class="timeline-track"><span id="historyTrack"></span><span id="futureTrack"></span></div>
+          <div class="timeline-dates"><span id="historyDate">Waiting for dataset</span><span id="futureDate">Future</span></div>
+          <div class="timeline-slider-row">
+            <span class="slider-edge-label">Older</span>
+            <input id="timelineSlider" class="timeline-slider" type="range" min="0" max="1000" value="1000" step="1" aria-label="Navigate through forecast timeline" disabled>
+            <span class="slider-edge-label">Newer</span>
+          </div>
+          <div class="timeline-slider-hint" id="timelineSliderHint">Run a forecast to navigate the timeline</div>
+        </div>
+      </section>
+
+      <aside class="side-column">
+        <section class="panel upload-panel" id="dataset">
+          <div class="section-kicker">01 / DATA SOURCE</div><h2>Bring your dataset</h2><p class="muted">Upload a XAUUSD CSV with a timestamp column and an OHLC or engineered metric to forecast.</p>
+          <input type="file" id="fileInput" accept=".csv,text/csv" hidden>
+          <button class="dropzone" id="dropzone" type="button"><span class="upload-icon">↑</span><b>Drop your CSV here</b><small>or <u>browse files</u> · CSV up to 25 MB</small></button>
+          <div class="file-meta" id="fileMeta"><span class="file-icon">▤</span><span><b id="fileName">No file selected</b><small id="fileDetails">Upload a dataset to begin</small></span><span class="file-check" id="fileCheck">✓</span></div>
+          <div class="field-grid">
+            <label>Date column<select id="dateColumn"><option value="">Upload a CSV first</option></select></label>
+            <label>Target metric<select id="targetColumn"><option value="">Upload a CSV first</option></select></label>
+            <label>Frequency<select id="frequency"><option value="5min">5 minutes</option><option value="15min">15 minutes</option><option value="1h">1 hour</option><option value="4h">4 hours</option><option value="D">Daily</option></select></label>
+            <label>Forecast horizon<select id="horizon"><option value="12">12 periods</option><option value="24">24 periods</option><option value="48">48 periods</option><option value="96" selected>96 periods</option><option value="288">288 periods</option></select></label>
+          </div>
+          <div class="helper" id="uploadMessage">Your CSV stays in this local app session and is sent to your configured API for processing.</div>
+        </section>
+        <section class="panel stats-panel">
+          <div class="section-kicker">02 / FORECAST SNAPSHOT</div><h2>At a glance</h2>
+          <div class="stat-grid">
+            <div class="stat"><small>Historical points</small><strong id="historyCount">--</strong><em>observations</em></div>
+            <div class="stat"><small>Last observation</small><strong id="lastObservationStat">--</strong><em>latest timestamp</em></div>
+            <div class="stat"><small>Forecast average</small><strong id="forecastAvg">--</strong><em>per period</em></div>
+            <div class="stat"><small>Forecast total</small><strong id="forecastTotal">--</strong><em>next horizon</em></div>
+          </div>
+          <div class="engine-note"><span class="pulse"></span><span><b id="engineLabel">Waiting for forecast</b><small id="engineDescription">Model status will appear here.</small></span></div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="panel inspect-panel hidden" id="inspectPanel">
+      <div class="inspect-heading"><div><div class="section-kicker">DATA QUALITY / QUICK LOOK</div><h2>Dataset inspection</h2><p class="muted" id="inspectSummary">Preview of uploaded data.</p></div><button class="icon-btn" id="closeInspect">×</button></div>
+      <div class="table-scroll"><table id="previewTable"></table></div>
+    </section>
+
+    <section class="panel forecast-table-panel hidden" id="forecastTablePanel">
+      <div class="inspect-heading"><div><div class="section-kicker">03 / PREDICTION OUTPUT</div><h2>Forecast values</h2><p class="muted">Point forecast and model-provided range for each future timestamp.</p></div><button class="btn btn-light" id="downloadBtn">↓ &nbsp;Download forecast CSV</button></div>
+      <div class="table-scroll"><table id="forecastTable"></table></div>
+    </section>
+    <footer>XAUUSD FORECAST LAB <span>·</span> TIMESFM 3.0 WORKSPACE <span>·</span> LOCAL DEVELOPMENT BUILD</footer>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
